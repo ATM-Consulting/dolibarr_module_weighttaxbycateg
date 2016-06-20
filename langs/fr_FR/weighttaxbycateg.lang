@@ -12,4 +12,4 @@ addServiceAndCateg2 = pour les produits de la catégorie
 deleteConfirm = Voulez vous vraiment supprimer cette ligne ?
 title1 = Sélection des services et des catégories
 title2 = Sélection des tiers non concernés par les taxes
-addSociete = Exclure du système de taxes le tiers : 
+addCategSociete = Exclure du système de taxes les tiers de la catégorie

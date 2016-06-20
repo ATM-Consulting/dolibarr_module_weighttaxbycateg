@@ -61,15 +61,15 @@ if ($action === 'addCateg' && !empty($_REQUEST['fk_categ']) && !empty($_REQUEST[
 	unset($TCategsAndExcludedThird['TCategs'][$_REQUEST['fk_categ']]);
 	dolibarr_set_const($db, 'WTBC_CATEGS_AND_EXCLUDED_THIRD', serialize($TCategsAndExcludedThird), 'chaine', 0, '', $conf->entity);
 	
-} elseif($action === 'addSociete') {
-	$TSoc = array();
-	if(!empty($TCategsAndExcludedThird['TTiers'])) $TSoc = $TCategsAndExcludedThird['TTiers'];
-	if($_REQUEST['fk_soc'] > 0) $TSoc[$_REQUEST['fk_soc']] = $_REQUEST['fk_soc'];
-	$TCategsAndExcludedThird['TTiers'] = $TSoc;
+} elseif($action === 'addCategSociete') {
+	$TCategSoc = array();
+	if(!empty($TCategsAndExcludedThird['TCategTiers'])) $TCategSoc = $TCategsAndExcludedThird['TCategTiers'];
+	if($_REQUEST['fk_categ_soc'] > 0) $TCategSoc[$_REQUEST['fk_categ_soc']] = $_REQUEST['fk_categ_soc'];
+	$TCategsAndExcludedThird['TCategTiers'] = $TCategSoc;
 	dolibarr_set_const($db, 'WTBC_CATEGS_AND_EXCLUDED_THIRD', serialize($TCategsAndExcludedThird), 'chaine', 0, '', $conf->entity);
 } elseif($action === 'delSociete') {
 	
-	unset($TCategsAndExcludedThird['TTiers'][$_REQUEST['fk_soc']]);
+	unset($TCategsAndExcludedThird['TCategTiers'][$_REQUEST['fk_categ_soc']]);
 	dolibarr_set_const($db, 'WTBC_CATEGS_AND_EXCLUDED_THIRD', serialize($TCategsAndExcludedThird), 'chaine', 0, '', $conf->entity);
 	
 }
@@ -163,19 +163,20 @@ print '<tr class="liste_titre">';
 print '<td>'.$langs->trans("ThirdParty").'</td>'."\n";
 print '<td>'.$langs->trans("Delete").'</td></tr>'."\n";
 
-if(!empty($TCategsAndExcludedThird['TTiers'])) {
+if(!empty($TCategsAndExcludedThird['TCategTiers'])) {
 
-	foreach($TCategsAndExcludedThird['TTiers'] as $fk_soc) {
+	foreach($TCategsAndExcludedThird['TCategTiers'] as $fk_categ_soc) {
 	
-		$s = new Societe($db);
-		$s->fetch($fk_soc);
+		$categ = new Categorie($db);
+		$categ->fetch($fk_categ_soc);
+		$categ->color = 'ffffff'; // L'affichage de la couleur du texte dépend de couleur définie sur la categ
 		
 		print '<tr class="'.$bg[$var].'">';
 		print '<td>';
-		print $s->getNomUrl(1);
+		print $categ->getNomUrl(1);
 		print '</td>';
 		print '<td>';
-		print '<a href="?action=delSociete&fk_soc='.$fk_soc.'">'.img_picto($titlealt, 'delete.png').'</a>';
+		print '<a href="?action=delSociete&fk_categ_soc='.$fk_categ_soc.'">'.img_picto($titlealt, 'delete.png').'</a>';
 		print '</td>';
 		print '</tr>';
 
@@ -188,10 +189,10 @@ if(!empty($TCategsAndExcludedThird['TTiers'])) {
 print '</table>';
 
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
-print $langs->trans('addSociete');
-print $form->select_company('', 'fk_soc', '', 1);
+print $langs->trans('addCategSociete');
+print $form->select_all_categories('customer', '', 'fk_categ_soc');
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-print '<input type="hidden" name="action" value="addSociete">';
+print '<input type="hidden" name="action" value="addCategSociete">';
 print '<input type="submit" class="button" value="'.$langs->trans("Add").'">';
 print '</form>';
 

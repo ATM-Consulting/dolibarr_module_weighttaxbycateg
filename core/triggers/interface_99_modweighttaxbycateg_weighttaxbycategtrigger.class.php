@@ -126,9 +126,15 @@ class Interfaceweighttaxbycategtrigger
 			
 			$TCategsAndExcludedThird = unserialize($conf->global->WTBC_CATEGS_AND_EXCLUDED_THIRD);
 			$TCategsConf = $TCategsAndExcludedThird['TCategs'];
-			$TTiersConf = $TCategsAndExcludedThird['TTiers'];
-
-			if(!empty($TTiersConf) && in_array($object->socid, $TTiersConf)) return 0;
+			$TTiersConf = $TCategsAndExcludedThird['TCategTiers'];
+			
+			$c = new Categorie($db);
+			
+			// Exclusion par catégorie tiers
+			$TCategs = $c->containing($object->socid, 'customer', 'id');
+			foreach($TCategs as $id_categ) {
+				if(!empty($TTiersConf) && in_array($id_categ, $TTiersConf)) return 0;
+			}
 			
 			/* Tableau associatif qui va contenir en clé l'id de la catégorie
 			 * et en valeur le montant total des produits de cette categ dans le document
@@ -146,7 +152,6 @@ class Interfaceweighttaxbycategtrigger
 					$p = new Product($db);
 					$p->fetch($line->fk_product);
 					
-					$c = new Categorie($db);
 					$TCategs = $c->containing($line->fk_product, 'product', 'id');
 					
 					$TProductDocument[] = $line->fk_product;
