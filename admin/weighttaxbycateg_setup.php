@@ -31,6 +31,9 @@ if (! $res) {
 // Libraries
 require_once DOL_DOCUMENT_ROOT . "/core/lib/admin.lib.php";
 require_once '../lib/weighttaxbycateg.lib.php';
+dol_include_once('/core/class/html.form.class.php');
+dol_include_once('/categories/class/categorie.class.php');
+dol_include_once('/product/class/product.class.php');
 
 // Translations
 $langs->load("weighttaxbycateg@weighttaxbycateg");
@@ -42,37 +45,22 @@ if (! $user->admin) {
 
 // Parameters
 $action = GETPOST('action', 'alpha');
-
 /*
  * Actions
  */
-if (preg_match('/set_(.*)/',$action,$reg))
+
+$TCategsAndExcludedThird = unserialize($conf->global->WTBC_CATEGS_AND_EXCLUDED_THIRD);
+
+if ($action === 'addCateg' && !empty($_REQUEST['fk_categ']) && !empty($_REQUEST['fk_product']))
 {
-	$code=$reg[1];
-	if (dolibarr_set_const($db, $code, GETPOST($code), 'chaine', 0, '', $conf->entity) > 0)
-	{
-		header("Location: ".$_SERVER["PHP_SELF"]);
-		exit;
-	}
-	else
-	{
-		dol_print_error($db);
-	}
+	$TCateg = array();
+	if(!empty($TCategsAndExcludedThird['TCategs'])) $TCateg = $TCategsAndExcludedThird['TCategs'];
+	$TCateg[$_REQUEST['fk_categ']][] = $_REQUEST['fk_product'];
+	$TCategsAndExcludedThird['TCategs'] = $TCateg;
+	dolibarr_set_const($db, 'WTBC_CATEGS_AND_EXCLUDED_THIRD', serialize($TCategsAndExcludedThird), 'chaine', 0, '', $conf->entity);
 }
-	
-if (preg_match('/del_(.*)/',$action,$reg))
-{
-	$code=$reg[1];
-	if (dolibarr_del_const($db, $code, 0) > 0)
-	{
-		Header("Location: ".$_SERVER["PHP_SELF"]);
-		exit;
-	}
-	else
-	{
-		dol_print_error($db);
-	}
-}
+
+//var_dump($TCategsAndExcludedThird);
 
 /*
  * View
@@ -98,28 +86,52 @@ dol_fiche_head(
 // Setup page goes here
 $form=new Form($db);
 $var=false;
-print '<table class="noborder" width="100%">';
+print '<table class="noborder">';
 print '<tr class="liste_titre">';
-print '<td>'.$langs->trans("Parameters").'</td>'."\n";
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="center" width="100">'.$langs->trans("Value").'</td>'."\n";
+print '<td>'.$langs->trans("Category").'</td>'."\n";
+print '<td>'.$langs->trans("Service").'</td>'."\n";
+print '<td>'.$langs->trans("Delete").'</td></tr>'."\n";
 
+$i=0;
+foreach($TCategsAndExcludedThird['TCategs'] as $fk_categ=>$TProducts) {
+
+	$c = new Categorie($db);
+	$c->fetch($fk_categ);
+	$c->color = 'ffffff'; // L'affichage de la couleur du texte dépend de couleur définie sur la categ
+	
+	foreach($TProducts as $fk_product) {
+	
+		$p = new Product($db);
+		$p->fetch($fk_product);
+		
+		print '<tr>';
+		print '<td>';
+		print $c->getNomUrl(1);
+		print '</td>';
+		print '<td>';
+		print $p->getNomUrl(1);
+		print '</td>';
+		print '<td>';
+		print '';
+		print '</td>';
+		print '</tr>';
+
+	}
+}
+
+print '</table>';
 
 // Example with a yes / no select
 $var=!$var;
-print '<tr '.$bc[$var].'>';
-print '<td>'.$langs->trans("ParamLabel").'</td>';
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="right" width="300">';
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print $langs->trans('addServiceAndCateg1');
+print $form->select_produits('', 'fk_product', '', 20, 0, 1, 2, '', 1);
+print ' '.$langs->trans('addServiceAndCateg2').' ';
+print $form->select_all_categories('product', '', 'fk_categ');
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-print '<input type="hidden" name="action" value="set_CONSTNAME">';
-print $form->selectyesno("CONSTNAME",$conf->global->CONSTNAME,1);
-print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print '<input type="hidden" name="action" value="addCateg">';
+print '<input type="submit" class="button" value="'.$langs->trans("Add").'">';
 print '</form>';
-print '</td></tr>';
-
-print '</table>';
 
 llxFooter();
 

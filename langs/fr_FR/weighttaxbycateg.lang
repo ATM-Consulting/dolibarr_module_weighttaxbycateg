@@ -5,3 +5,7 @@ ATMAbout = Ce module a été développé par <a href="http://www.atm-consulting.
 
 weighttaxbycategSetup = Configuration du module weighttaxbycateg
 weighttaxbycategAbout = A propos du module weighttaxbycateg
+
+# Admin
+addServiceAndCateg1 = Ajouter une ligne service
+addServiceAndCateg2 = pour les produits de la catégorie
