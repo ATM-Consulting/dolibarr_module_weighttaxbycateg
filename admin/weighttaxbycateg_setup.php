@@ -53,18 +53,18 @@ if ($action === 'addCateg' && !empty($_REQUEST['fk_categ']) && !empty($_REQUEST[
 {
 	$TCateg = array();
 	if(!empty($TCategsAndExcludedThird['TCategs'])) $TCateg = $TCategsAndExcludedThird['TCategs'];
-	if(!isset($_REQUEST['fk_categ'][$_REQUEST['fk_product']])) $TCateg[$_REQUEST['fk_categ']][$_REQUEST['fk_product']] = $_REQUEST['fk_product'];
+	$TCateg[$_REQUEST['fk_categ']] = $_REQUEST['fk_product'];
 	$TCategsAndExcludedThird['TCategs'] = $TCateg;
 	dolibarr_set_const($db, 'WTBC_CATEGS_AND_EXCLUDED_THIRD', serialize($TCategsAndExcludedThird), 'chaine', 0, '', $conf->entity);
 } elseif($action === 'delCateg') {
 	
-	unset($TCategsAndExcludedThird['TCategs'][$_REQUEST['fk_categ']][$_REQUEST['fk_product']]);
+	unset($TCategsAndExcludedThird['TCategs'][$_REQUEST['fk_categ']]);
 	dolibarr_set_const($db, 'WTBC_CATEGS_AND_EXCLUDED_THIRD', serialize($TCategsAndExcludedThird), 'chaine', 0, '', $conf->entity);
 	
 } elseif($action === 'addSociete') {
 	$TSoc = array();
 	if(!empty($TCategsAndExcludedThird['TTiers'])) $TSoc = $TCategsAndExcludedThird['TTiers'];
-	$TSoc[$_REQUEST['fk_soc']] = $_REQUEST['fk_soc'];
+	if($_REQUEST['fk_soc'] > 0) $TSoc[$_REQUEST['fk_soc']] = $_REQUEST['fk_soc'];
 	$TCategsAndExcludedThird['TTiers'] = $TSoc;
 	dolibarr_set_const($db, 'WTBC_CATEGS_AND_EXCLUDED_THIRD', serialize($TCategsAndExcludedThird), 'chaine', 0, '', $conf->entity);
 } elseif($action === 'delSociete') {
@@ -114,32 +114,29 @@ $bg = array(0=>'impair', 1=>'pair');
 
 if(!empty($TCategsAndExcludedThird['TCategs'])) {
 	
-	foreach($TCategsAndExcludedThird['TCategs'] as $fk_categ=>$TProducts) {
+	foreach($TCategsAndExcludedThird['TCategs'] as $fk_categ=>$fk_product) {
 	
 		$c = new Categorie($db);
 		$c->fetch($fk_categ);
 		$c->color = 'ffffff'; // L'affichage de la couleur du texte dépend de couleur définie sur la categ
 		
-		foreach($TProducts as $fk_product) {
+		$p = new Product($db);
+		$p->fetch($fk_product);
 		
-			$p = new Product($db);
-			$p->fetch($fk_product);
-			
-			print '<tr class="'.$bg[$var].'">';
-			print '<td>';
-			print $c->getNomUrl(1);
-			print '</td>';
-			print '<td>';
-			print $p->getNomUrl(1);
-			print '</td>';
-			print '<td>';
-			print '<a href="?action=delCateg&fk_categ='.$fk_categ.'&fk_product='.$fk_product.'">'.img_picto($titlealt, 'delete.png').'</a>';
-			print '</td>';
-			print '</tr>';
-	
-			$var = !$var;
-	
-		}
+		print '<tr class="'.$bg[$var].'">';
+		print '<td>';
+		print $c->getNomUrl(1);
+		print '</td>';
+		print '<td>';
+		print $p->getNomUrl(1);
+		print '</td>';
+		print '<td>';
+		print '<a href="?action=delCateg&fk_categ='.$fk_categ.'&fk_product='.$fk_product.'">'.img_picto($titlealt, 'delete.png').'</a>';
+		print '</td>';
+		print '</tr>';
+
+		$var = !$var;
+
 	}
 
 }
@@ -163,7 +160,7 @@ print '<br />';
 
 print '<table class="noborder">';
 print '<tr class="liste_titre">';
-print '<td>'.$langs->trans("Category").'</td>'."\n";
+print '<td>'.$langs->trans("ThirdParty").'</td>'."\n";
 print '<td>'.$langs->trans("Delete").'</td></tr>'."\n";
 
 if(!empty($TCategsAndExcludedThird['TTiers'])) {
