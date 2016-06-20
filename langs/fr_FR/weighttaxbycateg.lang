@@ -9,3 +9,4 @@ weighttaxbycategAbout = A propos du module weighttaxbycateg
 # Admin
 addServiceAndCateg1 = Ajouter une ligne service
 addServiceAndCateg2 = pour les produits de la catégorie
+deleteConfirm = Voulez vous vraiment supprimer cette ligne ?

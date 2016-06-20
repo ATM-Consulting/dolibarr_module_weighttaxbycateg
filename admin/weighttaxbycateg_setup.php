@@ -23,15 +23,13 @@
  * 				Put some comments here
  */
 // Dolibarr environment
-$res = @include("../../main.inc.php"); // From htdocs directory
-if (! $res) {
-    $res = @include("../../../main.inc.php"); // From "custom" directory
-}
+require '../config.php';
 
 // Libraries
 require_once DOL_DOCUMENT_ROOT . "/core/lib/admin.lib.php";
 require_once '../lib/weighttaxbycateg.lib.php';
 dol_include_once('/core/class/html.form.class.php');
+dol_include_once('/core/lib/functions.lib.php');
 dol_include_once('/categories/class/categorie.class.php');
 dol_include_once('/product/class/product.class.php');
 
@@ -39,12 +37,11 @@ dol_include_once('/product/class/product.class.php');
 $langs->load("weighttaxbycateg@weighttaxbycateg");
 
 // Access control
-if (! $user->admin) {
-    accessforbidden();
-}
+if (! $user->admin) accessforbidden();
 
 // Parameters
 $action = GETPOST('action', 'alpha');
+
 /*
  * Actions
  */
@@ -55,9 +52,14 @@ if ($action === 'addCateg' && !empty($_REQUEST['fk_categ']) && !empty($_REQUEST[
 {
 	$TCateg = array();
 	if(!empty($TCategsAndExcludedThird['TCategs'])) $TCateg = $TCategsAndExcludedThird['TCategs'];
-	$TCateg[$_REQUEST['fk_categ']][] = $_REQUEST['fk_product'];
+	if(!isset($_REQUEST['fk_categ'][$_REQUEST['fk_product']])) $TCateg[$_REQUEST['fk_categ']][$_REQUEST['fk_product']] = $_REQUEST['fk_product'];
 	$TCategsAndExcludedThird['TCategs'] = $TCateg;
 	dolibarr_set_const($db, 'WTBC_CATEGS_AND_EXCLUDED_THIRD', serialize($TCategsAndExcludedThird), 'chaine', 0, '', $conf->entity);
+} elseif($action === 'delCateg') {
+	
+	unset($TCategsAndExcludedThird['TCategs'][$_REQUEST['fk_categ']][$_REQUEST['fk_product']]);
+	dolibarr_set_const($db, 'WTBC_CATEGS_AND_EXCLUDED_THIRD', serialize($TCategsAndExcludedThird), 'chaine', 0, '', $conf->entity);
+	
 }
 
 //var_dump($TCategsAndExcludedThird);
@@ -92,31 +94,34 @@ print '<td>'.$langs->trans("Category").'</td>'."\n";
 print '<td>'.$langs->trans("Service").'</td>'."\n";
 print '<td>'.$langs->trans("Delete").'</td></tr>'."\n";
 
-$i=0;
-foreach($TCategsAndExcludedThird['TCategs'] as $fk_categ=>$TProducts) {
-
-	$c = new Categorie($db);
-	$c->fetch($fk_categ);
-	$c->color = 'ffffff'; // L'affichage de la couleur du texte dépend de couleur définie sur la categ
+if(!empty($TCategsAndExcludedThird['TCategs'])) {
 	
-	foreach($TProducts as $fk_product) {
+	foreach($TCategsAndExcludedThird['TCategs'] as $fk_categ=>$TProducts) {
 	
-		$p = new Product($db);
-		$p->fetch($fk_product);
+		$c = new Categorie($db);
+		$c->fetch($fk_categ);
+		$c->color = 'ffffff'; // L'affichage de la couleur du texte dépend de couleur définie sur la categ
 		
-		print '<tr>';
-		print '<td>';
-		print $c->getNomUrl(1);
-		print '</td>';
-		print '<td>';
-		print $p->getNomUrl(1);
-		print '</td>';
-		print '<td>';
-		print '';
-		print '</td>';
-		print '</tr>';
-
+		foreach($TProducts as $fk_product) {
+		
+			$p = new Product($db);
+			$p->fetch($fk_product);
+			
+			print '<tr>';
+			print '<td>';
+			print $c->getNomUrl(1);
+			print '</td>';
+			print '<td>';
+			print $p->getNomUrl(1);
+			print '</td>';
+			print '<td>';
+			print '<a href="?action=delCateg&fk_categ='.$fk_categ.'&fk_product='.$fk_product.'">'.img_picto($titlealt, 'delete.png').'</a>';
+			print '</td>';
+			print '</tr>';
+	
+		}
 	}
+
 }
 
 print '</table>';
