@@ -119,13 +119,16 @@ class Interfaceweighttaxbycategtrigger
         
         global $db;
 		
-        if ($action === 'BILL_VALIDATE') {
+        if ($action === 'BILL_VALIDATE' || $action === 'PROPAL_VALIDATE' || $action === 'ORDER_VALIDATE') {
         
 	        dol_include_once('/product/class/product.class.php');
 	        dol_include_once('/categories/class/categorie.class.php');
 			
 			$TCategsAndExcludedThird = unserialize($conf->global->WTBC_CATEGS_AND_EXCLUDED_THIRD);
 			$TCategsConf = $TCategsAndExcludedThird['TCategs'];
+			$TTiersConf = $TCategsAndExcludedThird['TTiers'];
+
+			if(!empty($TTiersConf) && in_array($object->socid, $TTiersConf)) return 0;
 			
 			/* Tableau associatif qui va contenir en clé l'id de la catégorie
 			 * et en valeur le montant total des produits de cette categ dans le document
