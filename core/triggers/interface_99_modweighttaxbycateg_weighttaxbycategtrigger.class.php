@@ -170,7 +170,7 @@ class Interfaceweighttaxbycategtrigger
 				if(!in_array($service_utilise, $TProductDocument)) {
 					$srv = new Product($db);
 					$srv->fetch($service_utilise);
-					$object->addline('', $srv->price, $qty, 0, 0, 0, $srv->id);
+					$object->addline('', $srv->price, $qty, $srv->tva_tx, 0, 0, $srv->id);
 				}
 				
 			}
